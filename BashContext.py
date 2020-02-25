@@ -6,17 +6,17 @@ from CommandOutput import CommandOutput
 
 import Local
 
-def generate_magic_string()->str:
+
+def generate_magic_string() -> str:
     return "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(32))
 
 
 class ShellContext:
     def __init__(self, env: Dict[str, str]) -> None:
         self.env = env
-        self.env["forced"] = "value"
         self.conn = Local.Local()
-        self.env_prefix = "ENV_"
-    
+        self.env_prefix = ""
+
     def get_environment(self, env: str) -> Dict[str, str]:
         ret = {}
         lines = env.split("\n")
@@ -38,7 +38,8 @@ class ShellContext:
         token_end = generate_magic_string()
         cmd = ""
         for item in self.env.items():
-            cmd += "export {}{}=\"{}\";\n".format(self.env_prefix, item[0], item[1])
+            cmd += "export {}{}=\"{}\";\n".format(
+                self.env_prefix, item[0], item[1])
             # pass
         cmd += "echo " + token_begin + ";\n"
         cmd += "export;\n"
@@ -46,19 +47,26 @@ class ShellContext:
         cmd += command + ";\n"
         cmd += "echo " + token_end + ";\n"
         cmd += "export;"
-        
+
+        print(cmd)
         r = self.conn.execute(cmd)
-        env_str_begin = r.stdout[r.stdout.find(token_begin)+len(token_begin):r.stdout.find(token_mid)]
+        env_str_begin = r.stdout[r.stdout.find(
+            token_begin)+len(token_begin):r.stdout.find(token_mid)]
         env_begin = self.get_environment(env_str_begin)
 
-        actual_stdout = r.stdout[r.stdout.find(token_mid)+len(token_mid):r.stdout.find(token_end)]
+        actual_stdout = r.stdout[r.stdout.find(
+            token_mid)+len(token_mid):r.stdout.find(token_end)]
 
-        env_str_end = r.stdout[r.stdout.find(token_mid)+len(token_mid):]
+        env_str_end = r.stdout[r.stdout.find(token_end)+len(token_end):]
+        print(env_str_end)
         env_end = self.get_environment(env_str_end)
 
-        print(env_end)
-        self.env = env_end
-        print(self.env)
+        print(env_begin)
+
+        for item in env_end:
+            if not item in env_begin:
+                if item.startswith(self.env_prefix):
+                    self.env[item[len(self.env_prefix):]] = env_end[item]
 
         return r
 
@@ -70,9 +78,9 @@ if __name__ == "__main__":
     logging.info("Started")
 
     env = {}
-    env["COUNTER"] = "999 777"
+    env["a"] = "b"
     ctx = ShellContext(env)
 
-    print(env)
-    rv = ctx.cmd("echo $ENV_COUNTER; export ENV_a=\"123\"")
+    ctx.cmd("echo $a; export ENV_b=\"123\"")
+    ctx.cmd("A=\"readfae\"; export A")
     print(env)
