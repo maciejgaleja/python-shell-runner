@@ -18,7 +18,7 @@ class ShellContext:
         self.env_prefix = ""
 
     def get_environment(self, env: str) -> Dict[str, str]:
-        ret = {}
+        ret: Dict[str, str] = {}
         lines = env.split("\n")
         for line in lines:
             if len(line) > 0:
@@ -27,9 +27,11 @@ class ShellContext:
                     value = None
                     try:
                         value = line.split("=")[1]
+                        if value.startswith("\"") and value.endswith("\""):
+                            value = value[1:-1]
+                        ret[key] = value
                     except:
                         pass
-                    ret[key] = value
         return ret
 
     def cmd(self, command: str) -> CommandOutput:
@@ -40,7 +42,6 @@ class ShellContext:
         for item in self.env.items():
             cmd += "export {}{}=\"{}\";\n".format(
                 self.env_prefix, item[0], item[1])
-            # pass
         cmd += "echo " + token_begin + ";\n"
         cmd += "export;\n"
         cmd += "echo " + token_mid + ";\n"
@@ -48,26 +49,23 @@ class ShellContext:
         cmd += "echo " + token_end + ";\n"
         cmd += "export;"
 
-        print(cmd)
         r = self.conn.execute(cmd)
         env_str_begin = r.stdout[r.stdout.find(
             token_begin)+len(token_begin):r.stdout.find(token_mid)]
         env_begin = self.get_environment(env_str_begin)
 
         actual_stdout = r.stdout[r.stdout.find(
-            token_mid)+len(token_mid):r.stdout.find(token_end)]
+            token_mid)+len(token_mid)+1:r.stdout.find(token_end)]
 
         env_str_end = r.stdout[r.stdout.find(token_end)+len(token_end):]
-        print(env_str_end)
         env_end = self.get_environment(env_str_end)
 
-        print(env_begin)
+        for item_end in env_end:
+            if not item_end in env_begin:
+                if item_end.startswith(self.env_prefix):
+                    self.env[item_end[len(self.env_prefix):]] = env_end[item_end]
 
-        for item in env_end:
-            if not item in env_begin:
-                if item.startswith(self.env_prefix):
-                    self.env[item[len(self.env_prefix):]] = env_end[item]
-
+        r.stdout = actual_stdout
         return r
 
 
@@ -83,4 +81,3 @@ if __name__ == "__main__":
 
     ctx.cmd("echo $a; export ENV_b=\"123\"")
     ctx.cmd("A=\"readfae\"; export A")
-    print(env)

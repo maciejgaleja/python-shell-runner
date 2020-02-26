@@ -7,7 +7,6 @@ class Local:
         pass
 
     def execute(self, cmd: str) -> CommandOutput.CommandOutput:
-        new_cmd = cmd
         args = ["bash", "-c", cmd]
         r = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout = r.stdout.decode("utf-8")

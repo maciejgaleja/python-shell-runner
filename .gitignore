@@ -2,3 +2,5 @@
 *.pyc
 .coverage
 *.egg-info
+.DS_Store
+htmlcov/
