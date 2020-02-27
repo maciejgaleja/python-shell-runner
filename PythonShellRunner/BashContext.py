@@ -30,7 +30,7 @@ class ShellContext:
                         if value.startswith("\"") and value.endswith("\""):
                             value = value[1:-1]
                         ret[key] = value
-                    except:
+                    except: # pragma: no cover
                         pass
         return ret
 
@@ -69,15 +69,16 @@ class ShellContext:
         return r
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": #pragma: no cover
     logging.basicConfig(
         level=logging.DEBUG, format="%(relativeCreated)6d %(threadName)s %(message)s"
     )
     logging.info("Started")
 
     env = {}
-    env["a"] = "b"
-    ctx = ShellContext(env)
+    env['var'] = 'Lorem ipsum'
 
-    ctx.cmd("echo $a; export ENV_b=\"123\"")
-    ctx.cmd("A=\"readfae\"; export A")
+    ctx = ShellContext(env)
+    r = ctx.cmd("export TOKEN=$(echo $var | awk '{print $1}')")
+    print(r)
+    print(env)
