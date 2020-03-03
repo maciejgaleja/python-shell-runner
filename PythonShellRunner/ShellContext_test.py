@@ -1,13 +1,13 @@
 import unittest
 import sys
 import os
-import BashContext
+import ShellContext
 
-class TestBashContext(unittest.TestCase):
+class TestShellContext(unittest.TestCase):
 
     def setUp(self):
         self.env = {}
-        self.ctx = BashContext.ShellContext(self.env)
+        self.ctx = ShellContext.ShellContext(self.env)
 
     def test_constructor(self):
         self.assertEqual(len(self.env), 0)
@@ -15,7 +15,7 @@ class TestBashContext(unittest.TestCase):
     def test_constructor_does_not_remove(self):
         env = {}
         env['a'] = 'b'
-        ctx = BashContext.ShellContext(env)
+        ctx = ShellContext.ShellContext(env)
         self.assertEqual(len(env), 1)
         self.assertEqual(env['a'], 'b')
 
