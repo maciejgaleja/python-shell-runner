@@ -70,15 +70,11 @@ class ShellContext:
 
 
 if __name__ == "__main__": #pragma: no cover
-    logging.basicConfig(
-        level=logging.DEBUG, format="%(relativeCreated)6d %(threadName)s %(message)s"
-    )
-    logging.info("Started")
-
     env = {}
-    env['var'] = 'Lorem ipsum'
+    env['name'] = 'Python'
 
     ctx = ShellContext(env)
-    r = ctx.cmd("export TOKEN=$(echo $var | awk '{print $1}')")
-    print(r)
-    print(env)
+    r = ctx.cmd("echo \"Hello, $name\"")
+    print(r.stdout, end="")
+    r=ctx.cmd("export name_length=$(echo $name | wc -m)")
+    print("{} has {} letters".format(env["name"], int(env["name_length"])-1))
