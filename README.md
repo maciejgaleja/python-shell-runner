@@ -5,6 +5,9 @@ This library allows running shell commands from Python with shared environment.
 Example:
 ```python
 import ShellContext
+
+env = {}
+env["name"] = "Python"
 ctx = ShellContext(env)
 r = ctx.cmd("echo \"Hello, $name\"")
 print(r.stdout, end="")
